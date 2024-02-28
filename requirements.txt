@@ -1,3 +1,19 @@
+# # - Создание виртуального окружения
+# python -m venv venv
+# # - удаление виртуального окружения
+# rm -r .\venv\
+# # - Активация виртуального окружения Windows
+# .\venv\Scripts\Activate.ps1
+# # - Активация виртуального окружения linux
+# source ./venv/bin/activate
+
+# # - Создание файла requirements.txt с зависимостями
+# pip freeze > requirements.txt
+# # - указание зависимостей
+# vim requirements.txt
+# # - установка зависимотей для окружения
+# pip install -r requirements.txt
+
 annotated-types==0.6.0
 anyio==4.3.0
 certifi==2024.2.2
@@ -20,3 +36,6 @@ typing_extensions==4.10.0
 urllib3==2.2.1
 loguru
 pysocks
+xlrd
+
+

@@ -1,5 +1,14 @@
 '''Телеграмм бот NFP
 '''
+# прокси
+import socks
+import socket
+socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "socks5://ifk:3f0gns1AZ@158.160.59.184", 3128)
+# socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "socks5://ifk:3f0gns1AZ@46.17.105.102", 3128)
+sock = socks.socksocket()
+# sock.settimeout(10)
+
+
 #-----библиотеки
 import telebot
 from telebot import types
