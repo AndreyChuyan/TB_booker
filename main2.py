@@ -1,25 +1,17 @@
-﻿import telebot
+import telebot
 from telebot import types
 
 from config import TOKEN_TELEGRAM, TOKEN_OPENAI
 from openai import OpenAI
-import socks
-import socket
 
-# Настройки прокси
-# Настройки прокси
-# telebot.apihelper.proxy = {'https': 'socks5://ifk:3f0gns1AZ@158.160.59.184:3128'}
-
-socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "socks5://ifk:3f0gns1AZ@158.160.59.184", 3128)
-socket.socket = socks.socksocket
+import os
+os.environ['http_proxy'] = 'http://ifk:3f0gns1AZ@46.17.105.102:3128'
+os.environ['https_proxy'] = 'http://ifk:3f0gns1AZ@46.17.105.102:3128'
 
 # Создаем экземпляр бота
 bot = telebot.TeleBot(TOKEN_TELEGRAM)
 
-
-client = OpenAI(
-    api_key=TOKEN_OPENAI
-)
+client = OpenAI(api_key=TOKEN_OPENAI)
 
 
 
