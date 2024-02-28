@@ -8,6 +8,8 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 file_log = "logs.log"
 dir_log = "logs"
 dir_path_log = os.path.join(script_dir, '..', dir_log)
+if not os.path.exists(dir_path_log):        # Создаем новую папку
+    os.makedirs(dir_path_log)
 LOG_PATH = os.path.join(dir_path_log, file_log)
 
 # Настройка стандартного логгера 'logging' для других целей

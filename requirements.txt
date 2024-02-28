@@ -3,7 +3,7 @@
 # # - удаление виртуального окружения
 # rm -r .\venv\
 # # - Активация виртуального окружения Windows
-# .\venv\Scripts\Activate.ps1
+# ./venv/Scripts/Activate.ps1
 # # - Активация виртуального окружения linux
 # source ./venv/bin/activate
 
