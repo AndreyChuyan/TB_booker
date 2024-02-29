@@ -62,5 +62,111 @@
         "ignored_books": [
             ""
         ]
+    },
+    {
+        "user_id": 760426987,
+        "favorite_books": [
+            "Стратегия голубого океана"
+        ],
+        "favorite_genre": [
+            ""
+        ],
+        "ignored_books": [
+            ""
+        ]
+    },
+    {
+        "user_id": 1516235085,
+        "favorite_books": [
+            ""
+        ],
+        "favorite_genre": [
+            "Любовь"
+        ],
+        "ignored_books": [
+            ""
+        ]
+    },
+    {
+        "user_id": 331031885,
+        "favorite_books": [
+            "Мы дети золотых рудников",
+            "Инсайдер",
+            "Улей",
+            "По ту сторону от тебя",
+            "Мактуб",
+            "Босиком по пеплу",
+            "Аполлон",
+            "Все закончится на нас",
+            "Паломничество Ланселота",
+            "Путь Кассандры или приключения с макаронами",
+            "Кости сердца",
+            "Офсайд",
+            "Уродливая любовь",
+            "Стигмалион",
+            "Мы с истекшим сроком годности",
+            "Дурные дороги",
+            "Жизнь на repeat",
+            "Скандальный роман"
+        ],
+        "favorite_genre": [
+            "",
+            "Роман",
+            "Приключения"
+        ],
+        "ignored_books": [
+            ""
+        ]
+    },
+    {
+        "user_id": 1128165205,
+        "favorite_books": [
+            "",
+            "Книга 1"
+        ],
+        "favorite_genre": [
+            "Роман"
+        ],
+        "ignored_books": [
+            ""
+        ]
+    },
+    {
+        "user_id": 420528858,
+        "favorite_books": [
+            ""
+        ],
+        "favorite_genre": [
+            "Фантастика"
+        ],
+        "ignored_books": [
+            ""
+        ]
+    },
+    {
+        "user_id": 6876968954,
+        "favorite_books": [
+            "The Lord of the Rings"
+        ],
+        "favorite_genre": [
+            "",
+            "fantasy"
+        ],
+        "ignored_books": [
+            "",
+            "\"A Song of Ice and Fire\""
+        ]
+    },
+    {
+        "user_id": 415598571,
+        "favorite_books": [
+            ""
+        ],
+        "favorite_genre": [
+            "История"
+        ],
+        "ignored_books": [
+            ""
+        ]
     }
 ]

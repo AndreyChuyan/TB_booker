@@ -229,11 +229,11 @@ def menu(message):
     but_1 = types.InlineKeyboardButton(text ='\U0001F4D6  Добавление интересов', callback_data='call_1')
     but_2 = types.InlineKeyboardButton(text ='\U0001F5D1  Удаление интересов', callback_data='call_2')
     but_3 = types.InlineKeyboardButton(text ='\U0001F4DA  Отчет по интересам', callback_data='call_3')
-    but_4 = types.InlineKeyboardButton(text ='\U0001F50D  Подготовить подборку!', callback_data='call_4')
+    but_4 = types.InlineKeyboardButton(text ='\U0001F916  ПОДГОТОВИТЬ ВЫБОРКУ!', callback_data='call_4')
     but_about = types.InlineKeyboardButton(text ='\u2139  О чат боте', callback_data='call_about')
     keyboardmain.add(but_1, but_2, but_3, but_4, but_about)
  # приветственное сообщение
-    bot.send_message(message.chat.id,'Добро пожаловать!\nЯ бот - <b>{1.first_name}</b>, \nукажите свои интересы в литературе:'.format(message.from_user, bot.get_me()), parse_mode='html',reply_markup=keyboardmain)
+    bot.send_message(message.chat.id,'Добро пожаловать! \U0001F916 \nЯ - <b>{1.first_name}</b>, работаю на искусственном интеллекте и готовлю вам интеллектуаьные подборки книг, исходя из ваших предпочтений \n\nУкажите свои интересы в литературе:'.format(message.from_user, bot.get_me()), parse_mode='html',reply_markup=keyboardmain)
 
  # отсылка в меню
 def menu_short(call): 
@@ -252,7 +252,7 @@ def callback_inline(call):
         keyboard_about = types.InlineKeyboardMarkup(row_width=1)
         but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
         keyboard_about.add(but_menu)
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Бот создан для создания родборок рекомендаций, основанных на ваших персональных предпочтениях и интересах к литературе\nРаботает с применением библиотеки OpenAI\n\nАвтор Чуян А.А.",reply_markup=keyboard_about)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Бот создан для создания родборок рекомендаций, основанных на ваших персональных предпочтениях и интересах к литературе\nРаботает с применением библиотеки OpenAI\nНаслаждайтесь чтением с удовольствием!\n\nАвтор Чуян А.А.",reply_markup=keyboard_about)
     elif call.data == 'menu':
         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=menu(call.message))
         
@@ -316,10 +316,11 @@ def callback_inline(call):
             keyboard_about.add(but_menu)
             user_id_number = call.from_user.id
             user = User(user_id_number, "", "", "")
-            question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр в формате: Жанр: Книга, Автор"
+            question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр из перечисленных мною в формате: Жанр: Книга, Автор"
             # print(question)
             recomend_books = question_ai(question)
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Ваша подборка:\n {recomend_books}",reply_markup=keyboard_about)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Ваша интеллектуальная подборка:\n {recomend_books}",reply_markup=keyboard_about)
+            Logger.info(f"Обработан запрос пользователя id:{user.user_id} ")
         except Exception as e:
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Нейросеть временно недоступна, попросите раработчика заплатить за подписку или поддержите его -)",reply_markup=keyboard_about)
             Logger.exception('Произошла ошибка', sep=' | ')
@@ -467,13 +468,6 @@ def f_menu_2_3(message):
         Logger.exception('Произошла ошибка', sep=' | ')
         menu(message)        
         
- 
-
-
-
-
-
-
 
 if __name__ == "__main__":
     bot.polling()
