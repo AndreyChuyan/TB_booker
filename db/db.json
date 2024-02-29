@@ -12,5 +12,42 @@
         "ignored_books": [
             "Маугли"
         ]
+    },
+    {
+        "user_id": 390411564,
+        "favorite_books": [
+            "Задача трех тел",
+            "Основание Айзек Азимов"
+        ],
+        "favorite_genre": [
+            "Фантастика"
+        ],
+        "ignored_books": [
+            "Маугли"
+        ]
+    },
+    {
+        "user_id": 1278561850,
+        "favorite_books": [
+            "Капитанская дочка"
+        ],
+        "favorite_genre": [
+            "Выживание"
+        ],
+        "ignored_books": [
+            "Война и мир"
+        ]
+    },
+    {
+        "user_id": 858068565,
+        "favorite_books": [
+            ""
+        ],
+        "favorite_genre": [
+            "Психология"
+        ],
+        "ignored_books": [
+            ""
+        ]
     }
 ]

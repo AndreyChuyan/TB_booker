@@ -3,6 +3,7 @@ import json
 import logging
 from src.my_loguru import Logger
 import telebot
+from telebot import types
 import requests
 from config import TOKEN_TELEGRAM, TOKEN_OPENAI
 from openai import OpenAI
@@ -28,10 +29,14 @@ client = OpenAI(api_key=TOKEN_OPENAI)
 # простые функции
 # индексация строк
 def split_words_with_index(items_list):
+    result = []
     for index, item in enumerate(items_list, start=1):
         words = item.split(",")
         for i, word in enumerate(words, start=1):
-            print(f"{index} - {word}")
+            data = (f"{index} - {word}")
+            result.append(data)
+    return "\n".join(result)
+
             
 def split_words(items_list):
     my_string = ' '.join(items_list)
@@ -90,6 +95,15 @@ class Database:
                 print(f"Игнорируемые книги: {data_block.ignored_books}")
             else:
                 print("Записей нет, добавьте книги")
+                
+    def generate_report_return(self, user_id):
+        '''печать отчета по пользователю Return'''
+        self.load_from_json()
+        for data_block in self.data:
+            if data_block.user_id == user_id:        
+                data = f"\nПользователь id: {data_block.user_id}\n--Любимые книги:\n{split_words_with_index(data_block.favorite_books)}\n--Любимые жанры:\n{split_words_with_index(data_block.favorite_genre)}\n--Игнорируемые книги:\n{split_words_with_index(data_block.ignored_books)}"
+                return data
+
 
     def generate_report_books(self, user_id):
         '''печать отчета по любимым книгам'''
@@ -200,130 +214,119 @@ class Database:
         except:
             print("Введите категории номерами")
             Logger.exception('Произошла ошибка', sep=' | ')
-            
 
 db1 = Database()
-user_id_number = 6574345
-
 users = []
 Logger.info('Программа была запущена', is_traceback=True)
 
 
+@bot.message_handler(commands=['start', 'help'])
+def menu(message): 
+    chat_id = message.chat.id  # Получаем ID чата
+    user_id_number = message.from_user.id  # Получаем ID пользователя
+#  клавитатура
+    keyboardmain = types.InlineKeyboardMarkup(row_width=1)  
+    but_1 = types.InlineKeyboardButton(text ='\U0001F4D6  Добавление интересов', callback_data='call_1')
+    but_2 = types.InlineKeyboardButton(text ='\U0001F5D1  Удаление интересов', callback_data='call_2')
+    but_3 = types.InlineKeyboardButton(text ='\U0001F4DA  Отчет по интересам', callback_data='call_3')
+    but_4 = types.InlineKeyboardButton(text ='\U0001F50D  Подготовить подборку!', callback_data='call_4')
+    but_about = types.InlineKeyboardButton(text ='\u2139  О чат боте', callback_data='call_about')
+    keyboardmain.add(but_1, but_2, but_3, but_4, but_about)
+ # приветственное сообщение
+    bot.send_message(message.chat.id,'Добро пожаловать, {0.first_name}!\nЯ - <b>{1.first_name}</b>, \nукажите свои интересы в литературе:'.format(message.from_user, bot.get_me()), parse_mode='html',reply_markup=keyboardmain)
 
-while True:
-    try:
-        m0 = int(input("\n--Генератор интересного чтива-- Автор Чуян А.А. \n--Выберите задачу: \n 1- Добавление интересов\n 2- Удаление интересов\n 3- Отчет по интересам\n 4- Подготовить подборку книг по интересам\n   0 - Выход\n    : "))
-        # подменю добавления
-        if m0 == 1:     
-            m1 = int(input("\n----Выберите задачу: \n 1- Добавление любимой книги\n 2- Добавление любимого жанра\n 3- Добавление игнорируемой книги\n 0 - Переход в меню\n  : "))
-            if m1 == 1:
-                print("Список ваших любимых книг: ")
-                db1.generate_report_books(user_id_number)
-                m1_m1 = input('Введите название любимой книги: ')
-                user = User(user_id_number, m1_m1, "", "")
-                db1.add_data(user)
-                users.append(user)
-                print("Добавлено")
-                print("Список ваших любимых книг: ")
-                db1.generate_report_books(user_id_number)
-                pass
-            elif m1 == 2:
-                print("Список ваших любимых жанров: ")
-                db1.generate_report_ganre(user_id_number)
-                m1_m2 = input('Введите название любимого жанра: ')
-                user = User(user_id_number, "", m1_m2, "")
-                db1.add_data(user)
-                users.append(user)
-                print("Добавлено")
-                print("Список ваших любимых жанров: ")
-                db1.generate_report_ganre(user_id_number)
-                pass
-            elif m1 == 3:
-                print("Список ваших игнорируемых книг: ")
-                db1.generate_report_ignore(user_id_number)
-                m1_m3 = input('Введите название игнорируемых книг: ')
-                user = User(user_id_number, "", "", m1_m3)
-                db1.add_data(user)
-                users.append(user)
-                print("Добавлено")
-                print("Список ваших игнорируемых книг: ")
-                db1.generate_report_ignore(user_id_number)
-                pass
-            elif m1 == 0:
-                print("Выход в меню")
-                break
-            else:
-                print("Неправильный ввод. Пожалуйста, выберите существующую задачу.")
-                Logger.error('Неверный ввод!', is_traceback=True)
-        # подменю удаления
-        elif m0 == 2:     
-            m2 = int(input("\n----Выберите задачу: \n 1- Удаление любимой книги\n 2- Удаление любимого жанра\n 3- Удаление игнорируемой книги\n 0 - Переход в меню\n  : "))
-            if m2 == 1:
-                print("Список ваших любимых книг: ")
-                db1.generate_report_books(user_id_number)
-                m2_m1 = int(input("\nВыберите номер книги для удаления: \n  : "))
-                db1.clear_book(user_id_number, 1, m2_m1)
-                print("Удалено")
-                print("Список ваших любимых книг: ")
-                db1.generate_report_books(user_id_number)
-                pass
-            elif m2 == 2:
-                print("Список ваших любимых жанров: ")
-                db1.generate_report_ganre(user_id_number)
-                m2_m2 = int(input("\nВыберите жанр для удаления: \n  : "))
-                db1.clear_book(user_id_number, 2, m2_m2)
-                print("Удалено")
-                print("Список ваших любимых жанров: ")
-                db1.generate_report_ganre(user_id_number)
-                pass
-            elif m2 == 3:
-                print("Список ваших игнорируемых книг: ")
-                db1.generate_report_ignore(user_id_number)
-                m2_m3 = int(input("\nВыберите игнорируемую книгу для удаления: \n  : "))
-                db1.clear_book(user_id_number, 3, m2_m2)
-                print("Удалено")
-                print("Список ваших игнорируемых книг: ")
-                db1.generate_report_ignore(user_id_number)
-                pass
-            elif m2 == 0:
-                print("Выход в меню")
-                break
-            else:
-                print("Неправильный ввод. Пожалуйста, выберите существующую задачу.")
-                Logger.error('Неверный ввод!', is_traceback=True)
-        # подменю отчета
-        elif m0 == 3: 
-            print("----Генерация полного отчета----")
-            print("----Список ваших любимых книг: ")
-            db1.generate_report_books(user_id_number)
-            print("----Список ваших любимых жанров: ")
-            db1.generate_report_ganre(user_id_number)
-            print("----Список ваших игнорируемых книг: ")
-            db1.generate_report_ignore(user_id_number)            
-            continue
-        # подменю бота
-        elif m0 == 4: 
-            question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр в формате: Жанр: Книга, Автор"
-            print(question)
-            print(question_ai(question))
+ # отсылка в меню
+def menu_short(call): 
+    #keyboard
+    keyboardmain_short = types.InlineKeyboardMarkup(row_width=1)  
+    but_menu_short = types.InlineKeyboardButton(text =' В меню', callback_data='menu')
+    keyboardmain_short.add(but_menu_short)
+    # message
+    bot.send_message(message.chat.id,'Войдите в меню'.format(message.from_user, bot.get_me()), parse_mode='html',reply_markup=keyboardmain_short)
 
-        elif m0 == 0:
-            print("Программа завершена.")
-            Logger.info('Программа была завершена', is_traceback=True)
-            break
-    except:
-        print("Ошибка")
-        Logger.exception('Произошла ошибка', sep=' | ')
+#---вешаем обработчик событий на нажатие всех inline-кнопок
+@bot.callback_query_handler(func=lambda call:True)
+def callback_inline(call):
+    #о боте
+    if call.data == 'call_about':
+        keyboard_about = types.InlineKeyboardMarkup(row_width=1)
+        but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
+        keyboard_about.add(but_menu)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Я - Помощник книгомана, я создан для создания родборок рекомендаций, основанных на ваших персональных предпочтениях и интересах к литературе \n Автор Чуян А.А.",reply_markup=keyboard_about)
+    elif call.data == 'menu':
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Вы вернулись в главное меню', reply_markup=menu(call.message))    #возврат к меню
 
+#---подменю    
+    elif call.data == 'call_1':
+        keyboardmain = types.InlineKeyboardMarkup(row_width=1)  
+        but_1_1 = types.InlineKeyboardButton(text ='Добавление любимой книги', callback_data='call_1_1')
+        but_1_2 = types.InlineKeyboardButton(text ='Добавление любимого жанра', callback_data='call_1_2')
+        but_1_3 = types.InlineKeyboardButton(text ='Добавление игнорируемой книги', callback_data='call_1_3')
+        but_menu = types.InlineKeyboardButton(text ='Переход в меню', callback_data='menu')
+        keyboardmain.add(but_1_1, but_1_2, but_1_3, but_menu)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='<b>----Выберите раздел:</b>', reply_markup=keyboardmain, parse_mode='HTML')
+    
+       
+    elif call.data == 'call_1_1':
+        msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите имя любимой книги: (0 - Переход в меню)')
+        bot.register_next_step_handler(msg, f_menu_1_1) #добавление любимой книги
+    
+    elif call.data == 'call_1_2':
+        msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите имя любимого жанра: (0 - Переход в меню)')
+        bot.register_next_step_handler(msg, f_menu_1_2) #добавление любимого жанра
+        
+    elif call.data == 'call_1_3':
+        msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите имя книг которые не нужно показывать: (0 - Переход в меню)')
+        bot.register_next_step_handler(msg, f_menu_1_3) #добавление игнор книг
 
+    elif call.data == 'call_2':
+        keyboardmain = types.InlineKeyboardMarkup(row_width=1)  
+        but_2_1 = types.InlineKeyboardButton(text ='Удаление книги из списка любимых', callback_data='call_2_1')
+        but_2_2 = types.InlineKeyboardButton(text ='Удаление жанра из списка любимых', callback_data='call_2_2')
+        but_2_3 = types.InlineKeyboardButton(text ='Удаление книги из списка игнорируемых', callback_data='call_2_3')
+        but_menu = types.InlineKeyboardButton(text ='Переход в меню', callback_data='menu')
+        keyboardmain.add(but_2_1, but_2_2, but_2_3, but_menu)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='<b>----Выберите раздел:</b>', reply_markup=keyboardmain, parse_mode='HTML')
+               
+    elif call.data == 'call_2_1':
+        msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите номер книги для удаления: (0 - Переход в меню)')
+        bot.register_next_step_handler(msg, f_menu_2_1)  
 
-# @bot.message_handler(commands=['start', 'help', 'asd'])
-# def send_welcome(message):
-#     bot.reply_to(message, "Howdy, how are you doing?")
+    elif call.data == 'call_2_2':
+        msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите номер жанра для удаления: (0 - Переход в меню)')
+        bot.register_next_step_handler(msg, f_menu_2_2) 
+        
+    elif call.data == 'call_2_3':
+        msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите номер игнорируемой книги для удаления: (0 - Переход в меню)')
+        bot.register_next_step_handler(msg, f_menu_2_3) 
 
+    elif call.data == 'call_3':
+        keyboard_about = types.InlineKeyboardMarkup(row_width=1)
+        but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
+        keyboard_about.add(but_menu)
+        user_id_number = call.from_user.id
+        user = User(user_id_number, "", "", "")
+        report_books = db1.generate_report_return(user_id_number)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Список ваших интересов:\n {report_books}",reply_markup=keyboard_about)
 
-# @bot.message_handler(func=lambda m: True)
+    elif call.data == 'call_4':
+        keyboard_about = types.InlineKeyboardMarkup(row_width=1)
+        but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
+        keyboard_about.add(but_menu)
+        user_id_number = call.from_user.id
+        user = User(user_id_number, "", "", "")
+        question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр в формате: Жанр: Книга, Автор"
+        # print(question)
+        recomend_books = question_ai(question)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Ваша подборка:\n {recomend_books}",reply_markup=keyboard_about)
+ 
+ 
+ 
+#  @bot.message_handler(func=lambda m: True)
 # def answer_all(message):
+#     chat_id = message.chat.id  # Получаем ID чата
+#     user_id = message.from_user.id  # Получаем ID пользователя
+#     print(user_id)
 #     print(message.from_user)
 #     completion = client.chat.completions.create(
 #         messages=[
@@ -336,7 +339,278 @@ while True:
 #     )
 #     result = completion.choices[0].message.content
 #     bot.reply_to(message, result)
+ 
+#//обработчики результатов ввода
+#добавление любимой книги
+def f_menu_3(message):
+    try:
+        chat_id = message.chat.id
+        user_id_number = message.from_user.id
+        date = message.text          #полученный текст
+        if date == "0":
+            menu(message)
+        else:
+            user = User(user_id_number, date, "", "")
+            db1.add_data(user)
+            users.append(user)
+            #отчет
+            report_books = db1.generate_report_return(user_id_number)
+            bot.send_message(chat_id=message.chat.id, text = f"Список ваших интересов:\n {report_books}")    #информационное сообщение
+            menu(message)
+    except Exception as e:
+        bot.reply_to(message, 'Неверный диапазон!')
+        Logger.exception('Произошла ошибка', sep=' | ')
+        menu(message)
+#добавление любимого жанра
+def f_menu_1_1(message):
+    try:
+        chat_id = message.chat.id
+        user_id_number = message.from_user.id
+        date = message.text          #полученный текст
+        if date == "0":
+            menu(message)
+        else:
+            user = User(user_id_number, date, "", "")
+            db1.add_data(user)
+            users.append(user)
+            #отчет
+            report_books = db1.generate_report_return(user_id_number)
+            bot.send_message(chat_id=message.chat.id, text = f"Список ваших интересов:\n {report_books}")    #информационное сообщение
+            menu(message)
+    except Exception as e:
+        bot.reply_to(message, 'Неверный диапазон!')
+        Logger.exception('Произошла ошибка', sep=' | ')
+        menu(message)
+#добавление любимого жанра
+def f_menu_1_2(message):
+    try:
+        chat_id = message.chat.id
+        user_id_number = message.from_user.id
+        date = message.text          #полученный текст
+        if date == "0":
+            menu(message)
+        else:
+            user = User(user_id_number, "", date, "")
+            db1.add_data(user)
+            users.append(user)
+            #отчет
+            report_books = db1.generate_report_return(user_id_number)
+            bot.send_message(chat_id=message.chat.id, text = f"Список ваших интересов:\n {report_books}")    #информационное сообщение
+            menu(message)
+    except Exception as e:
+        bot.reply_to(message, 'Неверный диапазон!')
+        Logger.exception('Произошла ошибка', sep=' | ')
+        menu(message)
+#добавление игнорируемых книг
+def f_menu_1_3(message):
+    try:
+        chat_id = message.chat.id
+        user_id_number = message.from_user.id
+        date = message.text          #полученный текст
+        if date == "0":
+            menu(message)
+        else:
+            user = User(user_id_number, "", "", date)
+            db1.add_data(user)
+            users.append(user)
+            #отчет
+            report_books = db1.generate_report_return(user_id_number)
+            bot.send_message(chat_id=message.chat.id, text = f"Список ваших интересов:\n {report_books}")    #информационное сообщение
+            menu(message)
+    except Exception as e:
+        bot.reply_to(message, 'Неверный диапазон!')
+        Logger.exception('Произошла ошибка', sep=' | ')
+        menu(message)
+
+#удаление любимой книги
+def f_menu_2_1(message):
+    try:
+        chat_id = message.chat.id
+        user_id_number = message.from_user.id
+        date = int(message.text)          #полученный текст
+        if date == 0:
+            menu(message)
+        else:
+            user = User(user_id_number, "", "", "")
+            db1.clear_book(user_id_number, 1, date)
+            users.append(user)
+            #отчет
+            report_books = db1.generate_report_return(user_id_number)
+            bot.send_message(chat_id=message.chat.id, text = f"Список ваших интересов:\n {report_books}")    #информационное сообщение
+            menu(message)
+    except Exception as e:
+        bot.reply_to(message, 'Неверный диапазон!')
+        Logger.exception('Произошла ошибка', sep=' | ')
+        menu(message)
+#удаление любимого жанра
+def f_menu_2_2(message):
+    try:
+        chat_id = message.chat.id
+        user_id_number = message.from_user.id
+        date = int(message.text)          #полученный текст
+        if date == 0:
+            menu(message)
+        else:
+            user = User(user_id_number, "", "", "")
+            db1.clear_book(user_id_number, 2, date)
+            users.append(user)
+            #отчет
+            report_books = db1.generate_report_return(user_id_number)
+            bot.send_message(chat_id=message.chat.id, text = f"Список ваших интересов:\n {report_books}")    #информационное сообщение
+            menu(message)
+    except Exception as e:
+        bot.reply_to(message, 'Неверный диапазон!')
+        Logger.exception('Произошла ошибка', sep=' | ')
+        menu(message)
+#удаление любимого жанра
+def f_menu_2_3(message):
+    try:
+        chat_id = message.chat.id
+        user_id_number = message.from_user.id
+        date = int(message.text)          #полученный текст
+        if date == 0:
+            menu(message)
+        else:
+            user = User(user_id_number, "", "", "")
+            db1.clear_book(user_id_number, 3, date)
+            users.append(user)
+            #отчет
+            report_books = db1.generate_report_return(user_id_number)
+            bot.send_message(chat_id=message.chat.id, text = f"Список ваших интересов:\n {report_books}")    #информационное сообщение
+            menu(message)
+    except Exception as e:
+        bot.reply_to(message, 'Неверный диапазон!')
+        Logger.exception('Произошла ошибка', sep=' | ')
+        menu(message)        
+        
+ 
 
 
-# if __name__ == "__main__":
-#     bot.polling()
+
+
+
+
+
+if __name__ == "__main__":
+    bot.polling()
+
+
+
+
+
+# while True:
+#     try:
+#         m0 = int(input("\n--Генератор интересного чтива-- Автор Чуян А.А. \n--Выберите задачу: \n 1- Добавление интересов\n 2- Удаление интересов\n 3- Отчет по интересам\n 4- Подготовить подборку книг по интересам\n   0 - Выход\n    : "))
+#         # подменю добавления
+#         if m0 == 1:     
+#             m1 = int(input("\n----Выберите задачу: \n 1- Добавление любимой книги\n 2- Добавление любимого жанра\n 3- Добавление игнорируемой книги\n 0 - Переход в меню\n  : "))
+#             if m1 == 1:
+#                 print("Список ваших любимых книг: ")
+#                 db1.generate_report_books(user_id_number)
+#                 m1_m1 = input('Введите название любимой книги: ')
+#                 user = User(user_id_number, m1_m1, "", "")
+#                 db1.add_data(user)
+#                 users.append(user)
+#                 print("Добавлено")
+#                 print("Список ваших любимых книг: ")
+#                 db1.generate_report_books(user_id_number)
+#                 pass
+#             elif m1 == 2:
+#                 print("Список ваших любимых жанров: ")
+#                 db1.generate_report_ganre(user_id_number)
+#                 m1_m2 = input('Введите название любимого жанра: ')
+#                 user = User(user_id_number, "", m1_m2, "")
+#                 db1.add_data(user)
+#                 users.append(user)
+#                 print("Добавлено")
+#                 print("Список ваших любимых жанров: ")
+#                 db1.generate_report_ganre(user_id_number)
+#                 pass
+#             elif m1 == 3:
+#                 print("Список ваших игнорируемых книг: ")
+#                 db1.generate_report_ignore(user_id_number)
+#                 m1_m3 = input('Введите название игнорируемых книг: ')
+#                 user = User(user_id_number, "", "", m1_m3)
+#                 db1.add_data(user)
+#                 users.append(user)
+#                 print("Добавлено")
+#                 print("Список ваших игнорируемых книг: ")
+#                 db1.generate_report_ignore(user_id_number)
+#                 pass
+#             elif m1 == 0:
+#                 print("Выход в меню")
+#                 break
+#             else:
+#                 print("Неправильный ввод. Пожалуйста, выберите существующую задачу.")
+#                 Logger.error('Неверный ввод!', is_traceback=True)
+#         # подменю удаления
+#         elif m0 == 2:     
+#             m2 = int(input("\n----Выберите задачу: \n 1- Удаление любимой книги\n 2- Удаление любимого жанра\n 3- Удаление игнорируемой книги\n 0 - Переход в меню\n  : "))
+#             if m2 in [0, 1, 2 ,3]:
+#                 if m2 == 1:
+#                     print("Список ваших любимых книг: ")
+#                     db1.generate_report_books(user_id_number)
+#                     m2_m1 = int(input("\nВыберите номер книги для удаления (0 - для выхода): \n  : "))
+#                     if m2_m1 != 0:
+#                         db1.clear_book(user_id_number, 1, m2_m1)
+#                         print("Удалено")
+#                         print("Список ваших любимых книг: ")
+#                         db1.generate_report_books(user_id_number)
+#                         pass   
+#                     else:
+#                         print("[ВНИМАНИЕ]-Неверный диапазон")
+#                         pass
+#                 elif m2 == 2:
+#                     print("Список ваших любимых жанров: ")
+#                     db1.generate_report_ganre(user_id_number)
+#                     m2_m2 = int(input("\nВыберите жанр для удаления: \n  : "))
+#                     if m2_m2 != 0:
+#                         db1.clear_book(user_id_number, 2, m2_m2)
+#                         print("Удалено")
+#                         print("Список ваших любимых жанров: ")
+#                         db1.generate_report_ganre(user_id_number)
+#                         pass
+#                     else:
+#                         print("[ВНИМАНИЕ]-Неверный диапазон")
+#                         pass                    
+#                 elif m2 == 3:
+#                     print("Список ваших игнорируемых книг: ")
+#                     db1.generate_report_ignore(user_id_number)
+#                     m2_m3 = int(input("\nВыберите игнорируемую книгу для удаления: \n  : "))
+#                     if m2_m3 != 0:    
+#                         db1.clear_book(user_id_number, 3, m2_m2)
+#                         print("Удалено")
+#                         print("Список ваших игнорируемых книг: ")
+#                         db1.generate_report_ignore(user_id_number)
+#                         pass
+#                     else:
+#                         print("[ВНИМАНИЕ]-Неверный диапазон")
+#                         pass
+#                 elif m2 == 0:
+#                     print("Выход в меню")
+#                     break
+#             else:
+#                 print("Неправильный ввод. Пожалуйста, выберите существующую задачу.")
+#         # подменю отчета
+#         elif m0 == 3: 
+#             print("----Генерация полного отчета----")
+#             print("----Список ваших любимых книг: ")
+#             db1.generate_report_books(user_id_number)
+#             print("----Список ваших любимых жанров: ")
+#             db1.generate_report_ganre(user_id_number)
+#             print("----Список ваших игнорируемых книг: ")
+#             db1.generate_report_ignore(user_id_number)            
+#             continue
+#         # подменю бота
+#         elif m0 == 4: 
+#             question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр в формате: Жанр: Книга, Автор"
+#             # print(question)
+#             print(question_ai(question))
+
+#         elif m0 == 0:
+#             print("Программа завершена.")
+#             Logger.info('Программа была завершена', is_traceback=True)
+#             break
+#     except:
+#         print("Ошибка")
+#         Logger.exception('Произошла ошибка', sep=' | ')
