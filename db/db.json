@@ -23,7 +23,8 @@
             "Фантастика"
         ],
         "ignored_books": [
-            "Маугли"
+            "Маугли",
+            "Марсианин"
         ]
     },
     {
@@ -45,6 +46,18 @@
         ],
         "favorite_genre": [
             "Психология"
+        ],
+        "ignored_books": [
+            ""
+        ]
+    },
+    {
+        "user_id": 2078524112,
+        "favorite_books": [
+            "Метро 2033"
+        ],
+        "favorite_genre": [
+            ""
         ],
         "ignored_books": [
             ""

@@ -233,7 +233,7 @@ def menu(message):
     but_about = types.InlineKeyboardButton(text ='\u2139  О чат боте', callback_data='call_about')
     keyboardmain.add(but_1, but_2, but_3, but_4, but_about)
  # приветственное сообщение
-    bot.send_message(message.chat.id,'Добро пожаловать, {0.first_name}!\nЯ - <b>{1.first_name}</b>, \nукажите свои интересы в литературе:'.format(message.from_user, bot.get_me()), parse_mode='html',reply_markup=keyboardmain)
+    bot.send_message(message.chat.id,'Добро пожаловать!\nЯ бот - <b>{1.first_name}</b>, \nукажите свои интересы в литературе:'.format(message.from_user, bot.get_me()), parse_mode='html',reply_markup=keyboardmain)
 
  # отсылка в меню
 def menu_short(call): 
@@ -252,10 +252,10 @@ def callback_inline(call):
         keyboard_about = types.InlineKeyboardMarkup(row_width=1)
         but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
         keyboard_about.add(but_menu)
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Я - Помощник книгомана, я создан для создания родборок рекомендаций, основанных на ваших персональных предпочтениях и интересах к литературе \n Автор Чуян А.А.",reply_markup=keyboard_about)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Бот создан для создания родборок рекомендаций, основанных на ваших персональных предпочтениях и интересах к литературе\nРаботает с применением библиотеки OpenAI\n\nАвтор Чуян А.А.",reply_markup=keyboard_about)
     elif call.data == 'menu':
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Вы вернулись в главное меню', reply_markup=menu(call.message))    #возврат к меню
-
+        bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=menu(call.message))
+        
 #---подменю    
     elif call.data == 'call_1':
         keyboardmain = types.InlineKeyboardMarkup(row_width=1)  
@@ -264,8 +264,8 @@ def callback_inline(call):
         but_1_3 = types.InlineKeyboardButton(text ='Добавление игнорируемой книги', callback_data='call_1_3')
         but_menu = types.InlineKeyboardButton(text ='Переход в меню', callback_data='menu')
         keyboardmain.add(but_1_1, but_1_2, but_1_3, but_menu)
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='<b>----Выберите раздел:</b>', reply_markup=keyboardmain, parse_mode='HTML')
-    
+        # bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='<b>-------------Выберите раздел:--------------</b>', reply_markup=keyboardmain, parse_mode='HTML')
+        bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=keyboardmain)
        
     elif call.data == 'call_1_1':
         msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите имя любимой книги: (0 - Переход в меню)')
@@ -310,36 +310,20 @@ def callback_inline(call):
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Список ваших интересов:\n {report_books}",reply_markup=keyboard_about)
 
     elif call.data == 'call_4':
-        keyboard_about = types.InlineKeyboardMarkup(row_width=1)
-        but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
-        keyboard_about.add(but_menu)
-        user_id_number = call.from_user.id
-        user = User(user_id_number, "", "", "")
-        question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр в формате: Жанр: Книга, Автор"
-        # print(question)
-        recomend_books = question_ai(question)
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Ваша подборка:\n {recomend_books}",reply_markup=keyboard_about)
- 
- 
- 
-#  @bot.message_handler(func=lambda m: True)
-# def answer_all(message):
-#     chat_id = message.chat.id  # Получаем ID чата
-#     user_id = message.from_user.id  # Получаем ID пользователя
-#     print(user_id)
-#     print(message.from_user)
-#     completion = client.chat.completions.create(
-#         messages=[
-#             {
-#                 "role": "user",
-#                 "content": message.text,
-#             }
-#         ],
-#         model="gpt-3.5-turbo",
-#     )
-#     result = completion.choices[0].message.content
-#     bot.reply_to(message, result)
- 
+        try:
+            keyboard_about = types.InlineKeyboardMarkup(row_width=1)
+            but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
+            keyboard_about.add(but_menu)
+            user_id_number = call.from_user.id
+            user = User(user_id_number, "", "", "")
+            question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр в формате: Жанр: Книга, Автор"
+            # print(question)
+            recomend_books = question_ai(question)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Ваша подборка:\n {recomend_books}",reply_markup=keyboard_about)
+        except Exception as e:
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Нейросеть временно недоступна, попросите раработчика заплатить за подписку или поддержите его -)",reply_markup=keyboard_about)
+            Logger.exception('Произошла ошибка', sep=' | ')
+
 #//обработчики результатов ввода
 #добавление любимой книги
 def f_menu_3(message):
@@ -493,9 +477,6 @@ def f_menu_2_3(message):
 
 if __name__ == "__main__":
     bot.polling()
-
-
-
 
 
 # while True:
