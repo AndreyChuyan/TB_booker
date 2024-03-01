@@ -7,4 +7,5 @@ venv/
 # кэш python
 __pycache__/
 
+# ключи и токены
 config.py
