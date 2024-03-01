@@ -5,7 +5,7 @@ from src.my_loguru import Logger
 import telebot
 from telebot import types
 import requests
-from config import TOKEN_TELEGRAM, TOKEN_OPENAI
+from config import TOKEN_TELEGRAM, TOKEN_OPENAI, http_proxy, https_proxy
 from openai import OpenAI
 
 # относительные пути поддиректорий
@@ -18,8 +18,8 @@ DB_PATH = os.path.join(dir_path_db, file_db)
 
 # прокси
 import os
-os.environ['http_proxy'] = 'http://ifk:3f0gns1AZ@46.17.105.102:3128'
-os.environ['https_proxy'] = 'http://ifk:3f0gns1AZ@46.17.105.102:3128'
+os.environ['http_proxy'] = http_proxy
+os.environ['https_proxy'] = https_proxy
 
 #создаем экземпляры
 bot = telebot.TeleBot(TOKEN_TELEGRAM)
@@ -101,7 +101,7 @@ class Database:
         self.load_from_json()
         for data_block in self.data:
             if data_block.user_id == user_id:        
-                data = f"\nПользователь id: {data_block.user_id}\n--Любимые книги:\n{split_words_with_index(data_block.favorite_books)}\n--Любимые жанры:\n{split_words_with_index(data_block.favorite_genre)}\n--Игнорируемые книги:\n{split_words_with_index(data_block.ignored_books)}"
+                data = f"\nПользователь id: {data_block.user_id}\n\n\U0001F4D6--Любимые книги:\n{split_words_with_index(data_block.favorite_books)}\n\n\U00002764--Любимые жанры:\n{split_words_with_index(data_block.favorite_genre)}\n\n\U00002705--Игнорируемые книги:\n{split_words_with_index(data_block.ignored_books)}"
                 return data
 
 
@@ -229,7 +229,7 @@ def menu(message):
     but_1 = types.InlineKeyboardButton(text ='\U0001F4D6  Добавление интересов', callback_data='call_1')
     but_2 = types.InlineKeyboardButton(text ='\U0001F5D1  Удаление интересов', callback_data='call_2')
     but_3 = types.InlineKeyboardButton(text ='\U0001F4DA  Отчет по интересам', callback_data='call_3')
-    but_4 = types.InlineKeyboardButton(text ='\U0001F916  ПОДГОТОВИТЬ ВЫБОРКУ!', callback_data='call_4')
+    but_4 = types.InlineKeyboardButton(text ='\U0001F916  ПОДГОТОВИТЬ ВЫБОРКУ! \U0001F680', callback_data='call_4')
     but_about = types.InlineKeyboardButton(text ='\u2139  О чат боте', callback_data='call_about')
     keyboardmain.add(but_1, but_2, but_3, but_4, but_about)
  # приветственное сообщение
@@ -252,16 +252,16 @@ def callback_inline(call):
         keyboard_about = types.InlineKeyboardMarkup(row_width=1)
         but_menu = types.InlineKeyboardButton(text ='В меню', callback_data='menu')
         keyboard_about.add(but_menu)
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Бот создан для создания родборок рекомендаций, основанных на ваших персональных предпочтениях и интересах к литературе\nРаботает с применением библиотеки OpenAI\nНаслаждайтесь чтением с удовольствием!\n\nАвтор Чуян А.А.",reply_markup=keyboard_about)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Привет!\nБот создан для создания подборок книг \U0001f4da, основанных на анализе ваших персональных предпочтениях и интересах к литературе \U0001F50D\n\nРаботает с применением библиотеки искусственного интеллекта OpenAI \U0001F916\n\nНаслаждайтесь чтением с удовольствием! \U0001F4D6\n\nАвтор Чуян А.А.",reply_markup=keyboard_about)
     elif call.data == 'menu':
         bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=menu(call.message))
-        
+    
 #---подменю    
     elif call.data == 'call_1':
         keyboardmain = types.InlineKeyboardMarkup(row_width=1)  
-        but_1_1 = types.InlineKeyboardButton(text ='Добавление любимой книги', callback_data='call_1_1')
-        but_1_2 = types.InlineKeyboardButton(text ='Добавление любимого жанра', callback_data='call_1_2')
-        but_1_3 = types.InlineKeyboardButton(text ='Добавление игнорируемой книги', callback_data='call_1_3')
+        but_1_1 = types.InlineKeyboardButton(text ='\U0001F4D6 Добавление любимой книги', callback_data='call_1_1')
+        but_1_2 = types.InlineKeyboardButton(text ='\U00002764 Добавление любимого жанра', callback_data='call_1_2')
+        but_1_3 = types.InlineKeyboardButton(text ='\U00002705 Добавление игнорируемой книги', callback_data='call_1_3')
         but_menu = types.InlineKeyboardButton(text ='Переход в меню', callback_data='menu')
         keyboardmain.add(but_1_1, but_1_2, but_1_3, but_menu)
         # bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='<b>-------------Выберите раздел:--------------</b>', reply_markup=keyboardmain, parse_mode='HTML')
@@ -278,12 +278,12 @@ def callback_inline(call):
     elif call.data == 'call_1_3':
         msg = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = '\n Введите имя книг которые не нужно показывать: (0 - Переход в меню)')
         bot.register_next_step_handler(msg, f_menu_1_3) #добавление игнор книг
-
+# \U0001F4D6--Любимые книги:\U00002764--Любимые жанры:\n\U00002705--Игнорируемые книги    
     elif call.data == 'call_2':
         keyboardmain = types.InlineKeyboardMarkup(row_width=1)  
-        but_2_1 = types.InlineKeyboardButton(text ='Удаление книги из списка любимых', callback_data='call_2_1')
-        but_2_2 = types.InlineKeyboardButton(text ='Удаление жанра из списка любимых', callback_data='call_2_2')
-        but_2_3 = types.InlineKeyboardButton(text ='Удаление книги из списка игнорируемых', callback_data='call_2_3')
+        but_2_1 = types.InlineKeyboardButton(text ='\U0001F4D6\U0001f5d1 Удаление книги из списка любимых', callback_data='call_2_1')
+        but_2_2 = types.InlineKeyboardButton(text ='\U00002764\U0001f5d1 Удаление жанра из списка любимых', callback_data='call_2_2')
+        but_2_3 = types.InlineKeyboardButton(text ='\U00002705\U0001f5d1 Удаление книги из списка игнорируемых', callback_data='call_2_3')
         but_menu = types.InlineKeyboardButton(text ='Переход в меню', callback_data='menu')
         keyboardmain.add(but_2_1, but_2_2, but_2_3, but_menu)
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='<b>----Выберите раздел:</b>', reply_markup=keyboardmain, parse_mode='HTML')
@@ -316,7 +316,7 @@ def callback_inline(call):
             keyboard_about.add(but_menu)
             user_id_number = call.from_user.id
             user = User(user_id_number, "", "", "")
-            question = f"Подбери мне книги, которые бы мне понравились, учитывая мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр из перечисленных мною в формате: Жанр: Книга, Автор"
+            question = f"Подбери мне книги, которые бы мне понравились, учитывая, что мои любимые книги, которые я уже прочитал: {db1.generate_str_books(user_id_number)} \nУчти, что мои любимые жанры: {db1.generate_str_genre(user_id_number)} \nНе предлагай мне книги: {db1.generate_str_ignored(user_id_number)} \nВыдай результат по паре книг на каждый жанр из перечисленных мною в формате: Жанр1:\n Книга1, Автор, год издания\nКнига2, Автор, год издания\n\nЖанр2:\n Книга1, Автор, год издания\nКнига2, Автор, год издания"
             # print(question)
             recomend_books = question_ai(question)
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Ваша интеллектуальная подборка:\n {recomend_books}",reply_markup=keyboard_about)

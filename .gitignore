@@ -6,3 +6,5 @@ venv/
 
 # кэш python
 __pycache__/
+
+config.py
